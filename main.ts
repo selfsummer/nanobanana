@@ -9,7 +9,7 @@ function createJsonErrorResponse(message: string, statusCode = 500) { /* ... */ 
 
 // --- 核心业务逻辑：调用 OpenRouter ---
 async function callOpenRouter(messages: any[], apiKey: string): Promise<{ type: 'image' | 'text'; content: string }> {
-    if (!apiKey) { throw new Error("callOpenRouter received an empty apiKey."); }
+    // if (!apiKey) { throw new Error("callOpenRouter received an empty apiKey."); }
     const openrouterPayload = { model: "google/gemini-2.5-flash-image-preview:free", messages };
     console.log("Sending SMARTLY EXTRACTED payload to OpenRouter:", JSON.stringify(openrouterPayload, null, 2));
     const apiResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {

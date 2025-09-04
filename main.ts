@@ -9,7 +9,7 @@ function createJsonErrorResponse(message: string, statusCode = 500) { /* ... */ 
 
 // --- 核心业务逻辑：调用 OpenRouter ---
 async function callOpenRouter(messages: any[], apiKey: string): Promise<{ type: 'image' | 'text'; content: string }> {
-    //if (!apiKey) { throw new Error("callOpenRouter received an empty apiKey."); }
+    if (!apiKey) { throw new Error("callOpenRouter received an empty apiKey."); }
     const openrouterPayload = { model: "google/gemini-2.5-flash-image-preview:free", messages };
     console.log("Sending SMARTLY EXTRACTED payload to OpenRouter:", JSON.stringify(openrouterPayload, null, 2));
     const apiResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -48,8 +48,8 @@ serve(async (req) => {
         // ... (此部分代码未修改)
         try {
             const geminiRequest = await req.json();
-            let apiKey = req.headers.get("Authorization")?.replace("Bearer ", "") || req.headers.get("x-goog-api-key") || "";
-            if (!apiKey) { return createJsonErrorResponse("API key is missing.", 401); }
+            // let apiKey = req.headers.get("Authorization")?.replace("Bearer ", "") || req.headers.get("x-goog-api-key") || "";
+            // if (!apiKey) { return createJsonErrorResponse("API key is missing.", 401); }
             if (!geminiRequest.contents?.length) { return createJsonErrorResponse("Invalid request: 'contents' array is missing.", 400); }
             const fullHistory = geminiRequest.contents;
             const lastUserMessageIndex = fullHistory.findLastIndex((msg: any) => msg.role === 'user');
@@ -63,7 +63,8 @@ serve(async (req) => {
             const stream = new ReadableStream({
                 async start(controller) {
                     try {
-                        const openRouterResult = await callOpenRouter(openrouterMessages, apiKey);
+                        const openRouterResult = await callOpenRouter(openrouterMessages);
+                        // const openRouterResult = await callOpenRouter(openrouterMessages, apiKey);
                         const sendChunk = (data: object) => controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`));
                         let textToStream = (openRouterResult.type === 'image') ? "好的，图片已生成：" : openRouterResult.content;
                         for (const char of textToStream) {
@@ -99,7 +100,7 @@ serve(async (req) => {
         try {
             const geminiRequest = await req.json();
             let apiKey = req.headers.get("Authorization")?.replace("Bearer ", "") || req.headers.get("x-goog-api-key") || "";
-            if (!apiKey) { return createJsonErrorResponse("API key is missing.", 401); }
+            // if (!apiKey) { return createJsonErrorResponse("API key is missing.", 401); }
             if (!geminiRequest.contents?.length) { return createJsonErrorResponse("Invalid request: 'contents' array is missing.", 400); }
             const fullHistory = geminiRequest.contents;
             const lastUserMessageIndex = fullHistory.findLastIndex((msg: any) => msg.role === 'user');
@@ -134,13 +135,14 @@ serve(async (req) => {
     if (pathname === "/generate") {
         try {
             const { prompt, images, apikey } = await req.json();
-            const openrouterApiKey = apikey || Deno.env.get("OPENROUTER_API_KEY");
-            if (!openrouterApiKey) { return new Response(JSON.stringify({ error: "OpenRouter API key is not set." }), { status: 500 }); }
+            // const openrouterApiKey = apikey || Deno.env.get("OPENROUTER_API_KEY");
+            // if (!openrouterApiKey) { return new Response(JSON.stringify({ error: "OpenRouter API key is not set." }), { status: 500 }); }
             if (!prompt || !images || !images.length) { return new Response(JSON.stringify({ error: "Prompt and images are required." }), { status: 400 }); }
             
             const webUiMessages = [ { role: "user", content: [ {type: "text", text: prompt}, ...images.map(img => ({type: "image_url", image_url: {url: img}})) ] } ];
             
-            const result = await callOpenRouter(webUiMessages, openrouterApiKey);
+            // const result = await callOpenRouter(webUiMessages, openrouterApiKey);
+            const result = await callOpenRouter(webUiMessages);
     
             // --- 这里是修改的关键 ---
             if (result.type === 'image') {

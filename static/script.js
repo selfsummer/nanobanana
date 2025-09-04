@@ -77,10 +77,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- 核心修改区域：增加了重试逻辑 ---
     generateBtn.addEventListener('click', async () => {
-        if (apiKeySection.style.display !== 'none' && !apiKeyInput.value.trim()) {
-            alert('请输入 OpenRouter API 密钥');
-            return;
-        }
+        // if (apiKeySection.style.display !== 'none' && !apiKeyInput.value.trim()) {
+        //     alert('请输入 OpenRouter API 密钥');
+        //     return;
+        // }
         if (selectedFiles.length === 0) {
             alert('请选择至少一张图片');
             return;
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         body: JSON.stringify({
                             prompt: promptInput.value,
                             images: base64Images,
-                            apikey: apiKeyInput.value
+                            //apikey: apiKeyInput.value
                         })
                     });
 
